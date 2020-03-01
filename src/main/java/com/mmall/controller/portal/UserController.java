@@ -8,6 +8,7 @@ import com.mmall.service.IUserService;
 import com.mmall.util.CookieUtil;
 import com.mmall.util.JsonUtil;
 import com.mmall.util.RedisPoolUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +41,6 @@ public class UserController {
     public ServerResponse<User> login(String username, String password, HttpSession httpSession, HttpServletResponse response, HttpServletRequest request) {
         ServerResponse<User> serverResponse = iUserService.login(username, password);
         if (serverResponse.isSuccess()) {
-          //  httpSession.setAttribute(Const.CURRENT_USER, response.getData());
             CookieUtil.writeLoginToken(response,httpSession.getId());
             RedisPoolUtil.setEx(httpSession.getId(), JsonUtil.objToString(serverResponse.getData()),Const.RedisCacheExtime.REDIS_SESSION_EXTIME);
         }
@@ -48,8 +48,13 @@ public class UserController {
     }
 
     @PostMapping("logout.do")
-    public ServerResponse<User> logout(HttpSession httpSession) {
-        httpSession.removeAttribute(Const.CURRENT_USER);
+    public ServerResponse<User> logout(HttpSession httpSession,HttpServletRequest request,HttpServletResponse response) {
+       // httpSession.removeAttribute(Const.CURRENT_USER);
+        String loginToken = CookieUtil.readLoginToken(request);
+        if(StringUtils.isBlank(loginToken)){
+            return ServerResponse.createByErrorMessage("用户未登入，无法注销!");
+        }
+        CookieUtil.delLoginToken(request,response);
         return ServerResponse.createBySuccess();
     }
 

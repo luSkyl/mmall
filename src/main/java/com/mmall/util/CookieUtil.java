@@ -30,6 +30,8 @@ public class CookieUtil {
         cookie.setPath("/");
         //设置最大年龄 单位是秒 如果不设置的话 MaxAge就不会被写入到硬盘，而是写在内存中，只在当前页有效
         cookie.setMaxAge(60 * 60 * 24 * 365);
+        //如果在Cookie中设置了"HttpOnly"属性，那么通过JavaScript脚本将无法读取到Cookie信息，这样能有效的防止XSS攻击，让网站应用更加安全。
+        cookie.setHttpOnly(true);
         log.info("【写入Cookie】 CookieName:{}  CookieValue:{}",cookie.getName(),cookie.getValue());
         response.addCookie(cookie);
     }
