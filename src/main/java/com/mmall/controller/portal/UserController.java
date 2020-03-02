@@ -78,9 +78,6 @@ public class UserController {
     @GetMapping("get_user_info.do")
     public ServerResponse<User> getUserInfo(HttpServletRequest request) {
         String loginToken = CookieUtil.readLoginToken(request);
-        if(StringUtils.isBlank(loginToken)){
-            return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
-        }
         User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
         if(user == null){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
