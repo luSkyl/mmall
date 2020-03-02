@@ -101,8 +101,9 @@ public class UserController {
     }
 
     @PostMapping("reset_password.do")
-    public ServerResponse<String> resetPassword(String passwordOld, String passwordNew, HttpSession httpSession) {
-        User user = (User) httpSession.getAttribute(Const.CURRENT_USER);
+    public ServerResponse<String> resetPassword(String passwordOld, String passwordNew, HttpServletRequest request) {
+        String loginToken = CookieUtil.readLoginToken(request);
+        User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
         if (user == null) {
             return ServerResponse.createByErrorMessage("用户未登录");
         }
@@ -110,8 +111,9 @@ public class UserController {
     }
 
     @PostMapping("update_information.do")
-    public ServerResponse<User> update_information(HttpSession httpSession, User user) {
-        User currentUser = (User) httpSession.getAttribute(Const.CURRENT_USER);
+    public ServerResponse<User> update_information(HttpServletRequest request, User user) {
+        String loginToken = CookieUtil.readLoginToken(request);
+        User currentUser = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
         if (currentUser == null) {
             return ServerResponse.createByErrorMessage("用户未登录");
         }
@@ -119,14 +121,15 @@ public class UserController {
         user.setUsername(currentUser.getUsername());
         ServerResponse<User> userServerResponse = iUserService.updateInformation(user);
         if(userServerResponse.isSuccess()){
-            httpSession.setAttribute(Const.CURRENT_USER,userServerResponse.getData());
+            RedisPoolUtil.setEx(loginToken, JsonUtil.objToString(userServerResponse.getData()),Const.RedisCacheExtime.REDIS_SESSION_EXTIME);
         }
         return  userServerResponse;
     }
 
     @GetMapping("get_information.do")
-    public ServerResponse<User> get_information(HttpSession session){
-        User user = (User) session.getAttribute(Const.CURRENT_USER);
+    public ServerResponse<User> get_information(HttpServletRequest request){
+        String loginToken = CookieUtil.readLoginToken(request);
+        User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
         if(user == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),"用户未登录,需要强制登录");
         }
