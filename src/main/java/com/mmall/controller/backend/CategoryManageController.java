@@ -6,10 +6,14 @@ import com.mmall.common.ServerResponse;
 import com.mmall.pojo.User;
 import com.mmall.service.ICategoryService;
 import com.mmall.service.IUserService;
+import com.mmall.util.CookieUtil;
+import com.mmall.util.JsonUtil;
+import com.mmall.util.RedisPoolUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -26,8 +30,9 @@ public class CategoryManageController {
     private ICategoryService iCategoryService;
 
     @PostMapping("addCategory.do")
-    public ServerResponse addCategory(HttpSession httpSession, String categoryName, @RequestParam(value = "parentId", defaultValue = "0") int parentId) {
-        User user = (User) httpSession.getAttribute(Const.CURRENT_USER);
+    public ServerResponse addCategory(HttpServletRequest request, String categoryName, @RequestParam(value = "parentId", defaultValue = "0") int parentId) {
+        String loginToken = CookieUtil.readLoginToken(request);
+        User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
         if (user == null) {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "用户未登录，请登录");
         }
@@ -40,8 +45,9 @@ public class CategoryManageController {
     }
 
     @PutMapping("set_category_name.do")
-    public ServerResponse setCategoryName(HttpSession httpSession, Integer categoryId, String categoryName) {
-        User user = (User) httpSession.getAttribute(Const.CURRENT_USER);
+    public ServerResponse setCategoryName(HttpServletRequest request, Integer categoryId, String categoryName) {
+        String loginToken = CookieUtil.readLoginToken(request);
+        User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
         if (user == null) {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "用户未登录，请登录");
         }
@@ -53,8 +59,9 @@ public class CategoryManageController {
     }
 
     @GetMapping("get_category.do")
-    public ServerResponse getChildAndParallelCategory(HttpSession httpSession, @RequestParam(value = "categoryId", defaultValue = "0") Integer categoryId) {
-        User user = (User) httpSession.getAttribute(Const.CURRENT_USER);
+    public ServerResponse getChildAndParallelCategory(HttpServletRequest request, @RequestParam(value = "categoryId", defaultValue = "0") Integer categoryId) {
+        String loginToken = CookieUtil.readLoginToken(request);
+        User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
         if (user == null) {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "用户未登录，请登录");
         }
@@ -67,8 +74,9 @@ public class CategoryManageController {
     }
 
     @GetMapping("get_deep_category.do")
-    public ServerResponse getCategoryAndDeepChildCategory(HttpSession httpSession, @RequestParam(value = "categoryId", defaultValue = "0") Integer categoryId) {
-        User user = (User) httpSession.getAttribute(Const.CURRENT_USER);
+    public ServerResponse getCategoryAndDeepChildCategory(HttpServletRequest request, @RequestParam(value = "categoryId", defaultValue = "0") Integer categoryId) {
+        String loginToken = CookieUtil.readLoginToken(request);
+        User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
         if (user == null) {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "用户未登录，请登录");
         }
