@@ -1,20 +1,22 @@
 package com.mmall.common;
 
+import com.google.common.collect.Lists;
 import com.mmall.util.PropertiesUtil;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.*;
+import redis.clients.util.Hashing;
+
+import java.util.List;
 
 /**
  * @Author lcy
- * @Date 2020/3/1
- * @Description Redis连接池
+ * @Date 2020/3/2
+ * @Description
  */
-public class RedisPool {
+public class RedisShardedPool {
     /**
-     * redis 连接池
+     * redis 分片 连接池
      */
-    private static JedisPool pool;
+    private static ShardedJedisPool pool;
     /**
      * 最大连接数
      */
@@ -36,13 +38,22 @@ public class RedisPool {
      */
     private static Boolean testOnReturn = Boolean.parseBoolean(PropertiesUtil.getProperty("redis.test.turn", "false"));
     /**
-     * Redis的IP地址
+     * Redis1的IP地址
      */
-    private static String redisIp = PropertiesUtil.getProperty("redis.ip");
+    private static String redis1Ip = PropertiesUtil.getProperty("redis1.ip");
     /**
-     * Redis的端口
+     * Redis1的端口
      */
-    private static Integer redisPort = Integer.parseInt(PropertiesUtil.getProperty("redis.port"));
+    private static Integer redis1Port = Integer.parseInt(PropertiesUtil.getProperty("redis1.port"));
+
+    /**
+     * Redis2的IP地址
+     */
+    private static String redis2Ip = PropertiesUtil.getProperty("redis2.ip");
+    /**
+     * Redis2的端口
+     */
+    private static Integer redis2Port = Integer.parseInt(PropertiesUtil.getProperty("redis2.port"));
 
 
     private static void initPool() {
@@ -54,31 +65,37 @@ public class RedisPool {
         config.setTestOnReturn(testOnReturn);
         //连接耗尽的时候是否阻塞，false会抛出异常，true阻塞直到超时。默认为True。
         config.setBlockWhenExhausted(true);
-        pool = new JedisPool(config, redisIp, redisPort,1000*2);
+        JedisShardInfo info1 = new JedisShardInfo(redis1Ip,redis1Port,1000*2);
+        JedisShardInfo info2 = new JedisShardInfo(redis2Ip,redis2Port,1000*2);
+        List<JedisShardInfo> jedisShardInfoList = Lists.newArrayList();
+        jedisShardInfoList.add(info1);
+        jedisShardInfoList.add(info2);
+        pool = new ShardedJedisPool(config, jedisShardInfoList, Hashing.MURMUR_HASH, ShardedJedis.DEFAULT_KEY_TAG_PATTERN);
     }
 
     static {
         initPool();
     }
 
-    public static void returnBrokenResource(Jedis jedis){
+    public static void returnBrokenResource(ShardedJedis jedis){
         pool.returnBrokenResource(jedis);
     }
-    public static void returnResource(Jedis jedis){
+    public static void returnResource(ShardedJedis jedis){
         pool.returnResource(jedis);
     }
-    public static Jedis getJedis(){
+    public static ShardedJedis getJedis(){
         return pool.getResource();
     }
 
     public static void main(String[] args) {
-        Jedis jedis = pool.getResource();
-        jedis.set("lcy","lcy");
+        ShardedJedis jedis = pool.getResource();
+        for (int i = 0; i < 10; i++) {
+            jedis.set("key"+i,""+i);
+        }
         returnResource(jedis);
 
         //临时调用，销毁连接池中的所有连接
         pool.destroy();
         System.out.println("Program is end");
     }
-
 }

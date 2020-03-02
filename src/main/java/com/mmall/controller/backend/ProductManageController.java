@@ -1,7 +1,6 @@
 package com.mmall.controller.backend;
 
 import com.google.common.collect.Maps;
-import com.mmall.common.Const;
 import com.mmall.common.ResponseCode;
 import com.mmall.common.ServerResponse;
 import com.mmall.pojo.Product;
@@ -12,7 +11,7 @@ import com.mmall.service.IUserService;
 import com.mmall.util.CookieUtil;
 import com.mmall.util.JsonUtil;
 import com.mmall.util.PropertiesUtil;
-import com.mmall.util.RedisPoolUtil;
+import com.mmall.util.RedisShardedPoolUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -42,7 +39,7 @@ public class ProductManageController {
     @PostMapping("save.do")
     public ServerResponse productSave(HttpServletRequest request, Product product) {
         String loginToken = CookieUtil.readLoginToken(request);
-        User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
+        User user = JsonUtil.stringToObj(RedisShardedPoolUtil.get(loginToken), User.class);
         if (user == null) {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "用户未登录，请登录");
         }
@@ -56,7 +53,7 @@ public class ProductManageController {
     @PostMapping("set_sale_status.do")
     public ServerResponse setSaleStatus(HttpServletRequest request, Integer productId, Integer status) {
         String loginToken = CookieUtil.readLoginToken(request);
-        User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
+        User user = JsonUtil.stringToObj(RedisShardedPoolUtil.get(loginToken), User.class);
         if (user == null) {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "用户未登录，请登录");
         }
@@ -70,7 +67,7 @@ public class ProductManageController {
     @GetMapping("detail.do")
     public ServerResponse getDetail(HttpServletRequest request, Integer productId) {
         String loginToken = CookieUtil.readLoginToken(request);
-        User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
+        User user = JsonUtil.stringToObj(RedisShardedPoolUtil.get(loginToken), User.class);
         if (user == null) {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "用户未登录，请登录");
         }
@@ -85,7 +82,7 @@ public class ProductManageController {
     @GetMapping("list.do")
     public ServerResponse getList(HttpServletRequest request, @RequestParam(value = "pageNum", defaultValue = "1") int pageNum, @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
         String loginToken = CookieUtil.readLoginToken(request);
-        User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
+        User user = JsonUtil.stringToObj(RedisShardedPoolUtil.get(loginToken), User.class);
         if (user == null) {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "用户未登录，请登录");
         }
@@ -99,7 +96,7 @@ public class ProductManageController {
     @GetMapping("search.do")
     public ServerResponse productSearch(HttpServletRequest request, String productName, Integer productId, @RequestParam(value = "pageNum", defaultValue = "1") int pageNum, @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
         String loginToken = CookieUtil.readLoginToken(request);
-        User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
+        User user = JsonUtil.stringToObj(RedisShardedPoolUtil.get(loginToken), User.class);
         if (user == null) {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "用户未登录，请登录");
         }
@@ -113,7 +110,7 @@ public class ProductManageController {
     @PostMapping("upload.do")
     public ServerResponse upload(@RequestParam(value = "upload_file",required = false) MultipartFile file, HttpServletRequest request) {
         String loginToken = CookieUtil.readLoginToken(request);
-        User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
+        User user = JsonUtil.stringToObj(RedisShardedPoolUtil.get(loginToken), User.class);
         if (user == null) {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "用户未登录，请登录");
         }
@@ -133,7 +130,7 @@ public class ProductManageController {
     @PostMapping("richtext_img_upload.do")
     public Map richtextImgUpload(@RequestParam(value = "upload_file",required = false) MultipartFile file, HttpServletRequest request, HttpServletResponse response) {
         String loginToken = CookieUtil.readLoginToken(request);
-        User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
+        User user = JsonUtil.stringToObj(RedisShardedPoolUtil.get(loginToken), User.class);
         Map resultMap = Maps.newHashMap();
         if (user == null) {
             resultMap.put("success",false);

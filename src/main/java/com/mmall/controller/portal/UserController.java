@@ -7,10 +7,9 @@ import com.mmall.pojo.User;
 import com.mmall.service.IUserService;
 import com.mmall.util.CookieUtil;
 import com.mmall.util.JsonUtil;
-import com.mmall.util.RedisPoolUtil;
+import com.mmall.util.RedisShardedPoolUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -42,7 +41,7 @@ public class UserController {
         ServerResponse<User> serverResponse = iUserService.login(username, password);
         if (serverResponse.isSuccess()) {
             CookieUtil.writeLoginToken(response,httpSession.getId());
-            RedisPoolUtil.setEx(httpSession.getId(), JsonUtil.objToString(serverResponse.getData()),Const.RedisCacheExtime.REDIS_SESSION_EXTIME);
+            RedisShardedPoolUtil.setEx(httpSession.getId(), JsonUtil.objToString(serverResponse.getData()),Const.RedisCacheExtime.REDIS_SESSION_EXTIME);
         }
         return serverResponse;
     }
@@ -54,7 +53,7 @@ public class UserController {
             return ServerResponse.createByErrorMessage("用户未登入，无法注销!");
         }
         CookieUtil.delLoginToken(request,response);
-        RedisPoolUtil.del(loginToken);
+        RedisShardedPoolUtil.del(loginToken);
         return ServerResponse.createBySuccess();
     }
 
@@ -78,7 +77,7 @@ public class UserController {
     @GetMapping("get_user_info.do")
     public ServerResponse<User> getUserInfo(HttpServletRequest request) {
         String loginToken = CookieUtil.readLoginToken(request);
-        User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
+        User user = JsonUtil.stringToObj(RedisShardedPoolUtil.get(loginToken), User.class);
         if(user == null){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
@@ -103,7 +102,7 @@ public class UserController {
     @PostMapping("reset_password.do")
     public ServerResponse<String> resetPassword(String passwordOld, String passwordNew, HttpServletRequest request) {
         String loginToken = CookieUtil.readLoginToken(request);
-        User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
+        User user = JsonUtil.stringToObj(RedisShardedPoolUtil.get(loginToken), User.class);
         if (user == null) {
             return ServerResponse.createByErrorMessage("用户未登录");
         }
@@ -113,7 +112,7 @@ public class UserController {
     @PostMapping("update_information.do")
     public ServerResponse<User> update_information(HttpServletRequest request, User user) {
         String loginToken = CookieUtil.readLoginToken(request);
-        User currentUser = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
+        User currentUser = JsonUtil.stringToObj(RedisShardedPoolUtil.get(loginToken), User.class);
         if (currentUser == null) {
             return ServerResponse.createByErrorMessage("用户未登录");
         }
@@ -121,7 +120,7 @@ public class UserController {
         user.setUsername(currentUser.getUsername());
         ServerResponse<User> userServerResponse = iUserService.updateInformation(user);
         if(userServerResponse.isSuccess()){
-            RedisPoolUtil.setEx(loginToken, JsonUtil.objToString(userServerResponse.getData()),Const.RedisCacheExtime.REDIS_SESSION_EXTIME);
+            RedisShardedPoolUtil.setEx(loginToken, JsonUtil.objToString(userServerResponse.getData()),Const.RedisCacheExtime.REDIS_SESSION_EXTIME);
         }
         return  userServerResponse;
     }
@@ -129,7 +128,7 @@ public class UserController {
     @GetMapping("get_information.do")
     public ServerResponse<User> get_information(HttpServletRequest request){
         String loginToken = CookieUtil.readLoginToken(request);
-        User user = JsonUtil.stringToObj(RedisPoolUtil.get(loginToken), User.class);
+        User user = JsonUtil.stringToObj(RedisShardedPoolUtil.get(loginToken), User.class);
         if(user == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),"用户未登录,需要强制登录");
         }
