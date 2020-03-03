@@ -18,8 +18,33 @@ public class Const {
     public static final String TOKEN_PREFIX = "Token_";
 
 
+    /**
+     * Redis的过期时间
+     */
     public interface RedisCacheExtime {
         int REDIS_SESSION_EXTIME = 60 * 30;
+    }
+
+    /**
+     * 登录拦截器
+     */
+    public interface AuthorityInterceptor{
+        /**
+         * 登录方法名
+         */
+       String LOGIN_CONTROLLER_METHOD_NAME ="login";
+        /**
+         * 富文本上传方法名
+         */
+       String UPLOAD_CONTROLLER_METHOD_NAME ="richtextImgUpload";
+        /**
+         * 登录方法所在类
+         */
+       String LOGIN_CONTROLLER_CLASS_NAME="UserManageController";
+        /**
+         * 富文本上传方法所在类
+         */
+       String UPLOAD_CONTROLLER_CLASS_NAME="ProductManageController";
     }
 
 
@@ -27,8 +52,14 @@ public class Const {
      * 角色状态信息
      */
     public interface Role {
-        int ROLE_CUSTOMER = 0;//普通用户
-        int ROLE_ADMIN = 1;//管理员
+        /**
+         * 普通用户
+         */
+        int ROLE_CUSTOMER = 0;
+        /**
+         * 管理员
+         */
+        int ROLE_ADMIN = 1;
     }
 
     /**
@@ -193,6 +224,16 @@ public class Const {
             }
             throw new RuntimeException("没有找到对应的支付方式");
         }
+    }
+
+    /**
+     * Redis 分布式锁
+     */
+    public interface REDIS_LOCK{
+        /**
+         * 关闭订单的分布式锁
+         */
+        String CLOSE_ORDER_TASK_LOCK = "CLOSE_ORDER_TASK_LOCK";
     }
 
 

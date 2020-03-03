@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import java.util.Set;
  * @Date 2020/2/24
  * @Description
  */
-@Transactional(rollbackFor = Throwable.class)
+@Transactional(propagation = Propagation.REQUIRED,rollbackFor = Exception.class)
 @Service("iCategoryService")
 public class CategoryServiceImpl implements ICategoryService {
     private Logger logger = LoggerFactory.getLogger(CategoryServiceImpl.class);

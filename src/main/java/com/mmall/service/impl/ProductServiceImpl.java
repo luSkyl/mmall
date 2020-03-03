@@ -19,6 +19,7 @@ import com.mmall.converter.ProductConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -28,7 +29,7 @@ import java.util.List;
  * @Date 2020/2/25
  * @Description
  */
-@Transactional(rollbackFor = Throwable.class)
+@Transactional(propagation = Propagation.REQUIRED,rollbackFor = Exception.class)
 @Service("iProductService")
 public class ProductServiceImpl implements IProductService {
 

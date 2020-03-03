@@ -19,8 +19,8 @@ public class ProductController {
     @Autowired
     private IProductService iProductService;
 
-    @GetMapping("detail.do")
-    public ServerResponse<ProductDetailVo> detail(Integer productId) {
+    @GetMapping("{productId}")
+    public ServerResponse<ProductDetailVo> detail(@PathVariable Integer productId) {
         return iProductService.getProductDetail(productId);
     }
 

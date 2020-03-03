@@ -31,10 +31,12 @@ import com.mmall.vo.OrderProductVo;
 import com.mmall.vo.OrderVo;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
@@ -47,7 +49,7 @@ import java.util.*;
  * @Date 2020/2/26
  * @Description
  */
-@Transactional(rollbackFor = Throwable.class)
+@Transactional(propagation = Propagation.REQUIRED,rollbackFor = Exception.class)
 @Service("iOrderService")
 public class OrderServiceImpl implements IOrderService {
     private static Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
@@ -567,6 +569,33 @@ public class OrderServiceImpl implements IOrderService {
             }
         }
         return ServerResponse.createByErrorMessage("订单不存在");
+    }
+
+    @Override
+    public ServerResponse<String> closeOrder(int hours) {
+        Date date = DateUtils.addHours(new Date(), -hours);
+        List<Order> orderList = orderMapper.selectOrderStatusByCreateTime(Const.OrderStatusEnum.NO_PAY.getCode(), DateTimeUtil.dateToStr(date));
+        if(CollectionUtils.isEmpty(orderList)){
+            return ServerResponse.createByErrorMessage("未付款的订单不存在");
+        }
+        for (Order order : orderList) {
+            List<OrderItem> orderItemList = orderItemMapper.selectByUserIdAndOrderNo(null, order.getOrderNo());
+            if(CollectionUtils.isNotEmpty(orderItemList)){
+                for (OrderItem orderItem : orderItemList) {
+                    Integer stock = productMapper.selectStockByProductId(orderItem.getProductId());
+                    //考虑到已生成的订单里的商品，被删除的情况
+                    if(stock == null){
+                        continue;
+                    }
+                    Product product = Product.builder().id(orderItem.getProductId()).stock(stock + orderItem.getQuantity()).build();
+                    productMapper.updateByPrimaryKeySelective(product);
+                }
+                int resultCount = orderMapper.closeOrderByOrderId(order.getId());
+                if(resultCount == 0){return ServerResponse.createByErrorMessage("关闭订单失败");}
+            }
+            log.info("【关闭订单】 关闭订单OrderNo:{}",order.getOrderNo());
+        }
+        return ServerResponse.createBySuccess("成功关闭订单");
     }
 
 }

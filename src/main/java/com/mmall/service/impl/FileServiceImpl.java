@@ -6,6 +6,7 @@ import com.mmall.util.FtpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,7 +19,7 @@ import java.util.UUID;
  * @Date 2020/2/25
  * @Description
  */
-@Transactional(rollbackFor = Throwable.class)
+@Transactional(propagation = Propagation.REQUIRED,rollbackFor = Exception.class)
 @Service("iFileService")
 public class FileServiceImpl implements IFileService {
     private Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);

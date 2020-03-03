@@ -5,6 +5,9 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
+/**
+ * @author :lcy
+ */
 public interface ProductMapper {
     /**
      * 删除商品
@@ -77,4 +80,11 @@ public interface ProductMapper {
      * @return
      */
    List<Product> selectByNameAndCategoryIds(@Param("productName")String productName,@Param("categoryIdList")List<Integer> categoryIdList);
+
+    /**
+     * 根据商品Id 查询对应商品的库存
+     * @param id 采用主键 防止锁表
+     * @return
+     */
+    Integer selectStockByProductId(Integer id);
 }

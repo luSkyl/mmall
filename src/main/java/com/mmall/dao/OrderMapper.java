@@ -83,4 +83,18 @@ public interface OrderMapper {
      */
     List<Order> selectAllOrder();
 
+    /**
+     * 根据创建订单的时间和订单状态 查询订单
+     * @param status
+     * @param date
+     * @return
+     */
+    List<Order> selectOrderStatusByCreateTime(@Param("status") Integer status,@Param("date") String date);
+
+    /**
+     * 通过订单Id 关闭订单
+     * @param id
+     * @return
+     */
+    int closeOrderByOrderId(Integer id);
 }
