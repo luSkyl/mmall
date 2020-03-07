@@ -22,6 +22,14 @@ public class SessionExpireFilter implements Filter {
 
     }
 
+    /**
+     * 每次操作 都延长Cookie的缓存时间
+     * @param servletRequest
+     * @param servletResponse
+     * @param filterChain
+     * @throws IOException
+     * @throws ServletException
+     */
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         String loginToken = CookieUtil.readLoginToken((HttpServletRequest) servletRequest);
